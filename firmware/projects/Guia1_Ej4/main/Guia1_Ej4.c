@@ -1,7 +1,7 @@
-/*! @mainpage Proyecto 1- Ejercicios 4,5 y 6
+/*! @mainpage Proyecto 1- Ejercicios 4, 5 y 6
  *
- * @section En este parte del proyecto se pide la realizacion de los items 4,5 y 6
- * los cuales en conjunto se tratan de:
+ * @section   Proyecto 1
+ * Consignas:
  * 4)Escribir una función que reciba un dato de 32 bits, la cantidad de dígitos de salida 
  * y un puntero a un arreglo donde se almacenen los n dígitos. 
  * La función convierte el dato recibido a BCD, guardando cada uno de los dígitos de salida
@@ -18,14 +18,21 @@
  *
  * |    Peripheral  |   ESP32   	|
  * |:--------------:|:--------------|
- * | 	PIN_X	 	| 	GPIO_X		|
+ * | 	PIN_20	 	| 	GPIO_OUTPUT	|
+ * | 	PIN_21	 	| 	GPIO_OUTPUT	|
+ * | 	PIN_22	 	| 	GPIO_OUTPUT	|
+ * | 	PIN_23	 	| 	GPIO_OUTPUT	|
+ * | 	PIN_9	 	| 	GPIO_OUTPUT |
+ * | 	PIN_18	 	| 	GPIO_OUTPUT	|
+ * | 	PIN_19	 	| 	GPIO_OUTPUT	|
+ * 
  *
  *
  * @section changelog Changelog
  *
  * |   Fecha	    | Descripcion                                    |
  * |:----------:|:-----------------------------------------------|
- * | 3/04/2024 | Ejercicio 3 proyecto 1	                         |
+ * | 3/04/2024 | Ejercicio 4 proyecto 1	                         |
  *
  * @author Quiroga Eugenio  (eugenioquirogabio@gmail.com)
  *
@@ -76,8 +83,7 @@ void convertToBcdArray(uint32_t data, uint8_t digits, uint8_t *bcd_number)
 	}
 }
 /** @fn void modificar_estado(uint32_t dato, gpioConf *vector_gpios)
- * @brief Funcion que a traves de un entero sin signo de 32 bits y una mascara, modifica el estado del pin de un vector 
- * de gpioConfig_t
+ * @brief Funcion que a traves de un entero sin signo de 32 bits y una mascara, modifica el estado del pin de un vector de gpioConfig_t
  * @param dato entero de 32 bits
  * @param vector_gpios puntero a vector de elementos del tipo gpioConfig_t 
  * @return 
@@ -154,17 +160,18 @@ void app_main(void)
 	for (uint h = 0; h < digitos; h++)
 	{
 
-		GPIOInit(vectorgpios[h].pin, vectorgpios[h].dir);
+		GPIOInit(vectorgpios[h].pin, vectorgpios[h].dir);//inicializo
+	}
+//(Ejercicio 5-instancia modificar_estado)
+	for (uint j = 0; j < digitos; j++)
+	{
+
+		modificar_estado(vector_bcd[j], vectorgpios);
 	}
 
-//	for (uint j = 0; j < digitos; j++)
-//	{
-
-//		modificar_estado(vector_bcd[j], vectorgpios);
-//	}
-
-	// creo vector de mapeo
-	gpioConf_t vectorgpio_map[3];
+//Para ejercicio 6
+	
+	gpioConf_t vectorgpio_map[3];// creo vector de mapeo
 
 	
 	
@@ -180,7 +187,7 @@ void app_main(void)
 	 for (uint r = 0; r < digitos; r++)
 	{
 
-		GPIOInit(vectorgpio_map[r].pin, vectorgpio_map[r].dir);
+		GPIOInit(vectorgpio_map[r].pin, vectorgpio_map[r].dir);  //inicializo
 	}
 	 
 	 
