@@ -1,6 +1,6 @@
 /*! @mainpage Proyecto 1- Ejercicios 4, 5 y 6
  *
- * @section   Proyecto 1
+ * @section El Proyecto 1
  * Consignas:
  * 4)Escribir una función que reciba un dato de 32 bits, la cantidad de dígitos de salida 
  * y un puntero a un arreglo donde se almacenen los n dígitos. 
@@ -59,6 +59,7 @@
  * @param dir GPIO direccion  '0' entrada ;  '1' salida
  * @return 
  */
+// Estructura del ejercicio 4
 typedef struct
 {
 	gpio_t pin; /*!< GPIO pin number */
