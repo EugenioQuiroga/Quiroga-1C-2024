@@ -1,6 +1,6 @@
-/*! @mainpage Proyecto 1- Ejercicios 3
+/*! @mainpage Proyecto 1- Ejercicio 3
  *
- * @section Proyecto 1 
+ * @section El Proyecto 1 
  *
  * Consignas:
  * Realice un función que reciba un puntero a una estructura LED como la que se muestra a continuación: 
@@ -14,7 +14,6 @@
  *
  *  Para ver las condiciones del mapa a seguir para el desarrollo de la actividad ver imagen de actidad 3 de  https://docs.google.com/document/d/1f4OtorkZ1hOFu-jOo0Uhmz-cJnUvV05Z-eNhs19IVZM/edit
  *
- * @section changelog Changelog
  *
  * |   Fecha	    | Descripcion                                    |
  * |:----------:|:-----------------------------------------------|
@@ -33,7 +32,7 @@
 #include <led.h>
 #include "switch.h"
 /*==================[macros and definitions]=================================*/
-/** @fn leds 
+/** @fn my_leds 
  * @brief Estructura que modela un led  
  * @param mode uint8_t modo 
  * @param n_led uint8_t numero de led
