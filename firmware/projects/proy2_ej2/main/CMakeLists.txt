@@ -1,2 +1,2 @@
-idf_component_register(SRCS "2_blinking_tasks.c"
+idf_component_register(SRCS "proy2_ej2.c"
                     INCLUDE_DIRS "")
