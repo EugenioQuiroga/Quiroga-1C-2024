@@ -1,9 +1,6 @@
 {
     "folders": [
         {
-            "path": "./drivers"
-        },
-        {
             "path": "./projects/0_blinking"
         },
         {
@@ -23,6 +20,18 @@
         },
         {
             "path": "projects/proy_2"
+        },
+        {
+            "path": "projects/proy2_ej2"
+        },
+        {
+            "path": "projects/proy2_ej3"
+        },
+        {
+            "path": "projects/proy2_ej3_b"
+        },
+        {
+            "path": "projects/proy2_ej4"
         }
     ],
     "settings": {

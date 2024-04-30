@@ -164,7 +164,22 @@ void app_main(void)
         .param_p = NULL,
     };
     TimerInit(&medir);
-   
+    // timer_config_t cargar_lcd = {
+    //     .timer = TIMER_A,
+    //     .period = PERIODO_MEDICION,
+    //     .func_p = FuncTimerlcd,
+    //     .param_p = NULL,
+    // };
+    // TimerInit(&cargar_lcd);
+
+    // timer_config_t mod_led = {
+    //     .timer = TIMER_A,
+    //     .period = PERIODO_MEDICION,
+    //     .func_p = FuncTimermodled,
+    //     .param_p = NULL,
+    // };
+    // TimerInit(&mod_led);
+
     // si hay una interrupcion con algun swtitch se ejecuta esta linea
     SwitchActivInt(SWITCH_1, &cargar_TCL1, NULL);
     SwitchActivInt(SWITCH_2, &cargar_TCL2, NULL);
