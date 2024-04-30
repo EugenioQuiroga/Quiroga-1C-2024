@@ -3,12 +3,13 @@
  * \section genDesc General Description
  *
  * Este codigo es un detector de proximidad dando respuestas diferentes ante una magnitud definda por rangos de distancias
- *
+ * En el mismo se procede a mediante interrupciones y otras herramientas a leer una entrada y cambiar la posicion de las variables que modifican el estado de una medicacion mediante leds.
+ * Ademas, mediante un  sensor de ultrasonido tomamos la distancia y la visualizamos en consola o terminal y un lcd.
  * @section changelog Changelog
  *
  * |   Date	    | Description                                    |
  * |:----------:|:-----------------------------------------------|
- * | 12/09/2023 | Document creation		                         |
+ * | 30/04/2024 | Document creation		                         |
  *
  * @author Quiroga Eugenio (eugenioquirogabio@gmail.com)
  *
@@ -38,14 +39,21 @@ TaskHandle_t led1_task_handle = NULL;
 TaskHandle_t led2_task_handle = NULL;
 TaskHandle_t led3_task_handle = NULL;
 TaskHandle_t led4_task_handle = NULL;
+
 gpio_t ECHO = GPIO_3;
 gpio_t TRIGGER = GPIO_2;
+
 bool TEC1 = false, TEC2 = false;
+
 uint8_t teclas;
 uint16_t distancia; // defino variable global
+
 /*==================[internal functions declaration]=========================*/
 
-
+/** @fn void Escribir()
+ * @brief Escribe en la uart la distancia 
+ * @return 
+ */
 static void Escribir(){
 UartSendString(UART_PC,"distancia");
 UartSendString(UART_PC,(char *)UartItoa(distancia,10));
@@ -54,7 +62,10 @@ UartSendString(UART_PC,"cm\r\n");
 }
 
 
-
+/** @fn void FuncTimermedir(void *param)
+ * @brief envia notificacion para medir
+ * @return 
+ */
 
 void FuncTimermedir(void *param)
 {
@@ -62,6 +73,12 @@ void FuncTimermedir(void *param)
     vTaskNotifyGiveFromISR(led3_task_handle, pdFALSE);
     vTaskNotifyGiveFromISR(led4_task_handle, pdFALSE);
 }
+
+
+/** @fn static void Medir(void *param)
+ * @brief Mide la distancia bajo la condicion de que la tecla 1 no este activa  
+ * @return 
+ */
 
 static void Medir(void *p)
 {
@@ -75,6 +92,11 @@ static void Medir(void *p)
         }
     }
 }
+/** @fn static void consola()
+ * @brief Consola lee la letra O o la letra H y cambia la posicion de la tecla uno o dos segun corresponda 
+ * @return 
+ */
+
 static void consola(){
     uint8_t letras;
     UartReadByte(UART_PC, &letras);
@@ -88,6 +110,11 @@ static void consola(){
          break;
     }
 }
+
+/** @fn static void cargarLCD(void *p)
+ * @brief Cargar lcd se encarga de mostrar  la distancia si la tecla 1 esta en alto y la tecla dos en bajo por el lcd. En el caso de estar presionada la tecla uno lo que realizara es apagar la pantalla lcd. Tambien realiza el llamado a la uart.
+ *  @return 
+ */
 static void cargarLCD(void *p)
 {
 
@@ -108,15 +135,27 @@ static void cargarLCD(void *p)
         Escribir();
     }
 }
-
+/** @fn static void cargar_TCL1(void *p)
+ * @brief cambia la posicion de la tecla uno 
+ *  @return 
+ */
 static void cargar_TCL1(void *p)
 {
     TEC1 = !TEC1;
 }
+/** @fn static void cargar_TCL2(void *p)
+ * @brief cambia la posicion de la tecla dos 
+ *  @return 
+ */
 static void cargar_TCL2(void *p)
 {
     TEC2 = !TEC2;
 }
+
+/** @fn static void modificar_leds(void *p)
+ * @brief Modifica el estado de los leds leyendo la distancia. 
+ *  @return 
+ */
 
 static void modificar_leds(void *p)
 {

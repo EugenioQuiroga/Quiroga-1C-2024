@@ -1,16 +1,16 @@
 /*! @mainpage Blinking
  *
- * \section genDesc General Description
- *
- * This example makes LED_1 and LED_2 blink at different rates, using FreeRTOS tasks and timer interrupts.
+ * \section Diseñar e implementar una aplicación, basada en el driver analog_io_mcu.h y el driver de transmisión serie uart_mcu.h, que digitalice una señal analógica y la transmita a un graficador de puerto serie de la PC. Se debe tomar la entrada CH1 del conversor AD y la transmisión se debe realizar por la UART conectada al puerto serie de la PC, en un formato compatible con un graficador por puerto serie. 
+
+
  * 
  * @section changelog Changelog
  *
  * |   Date	    | Description                                    |
  * |:----------:|:-----------------------------------------------|
- * | 12/09/2023 | Document creation		                         |
+ * | 30/04/2024 | Document creation		                         |
  *
- * @author Albano Peñalva (albano.penalva@uner.edu.ar)
+ * @author Quiroga Eugenio (Eugeniquirogabio@gmail.com)
  *
  */
 
