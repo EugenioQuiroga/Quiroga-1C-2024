@@ -1,15 +1,15 @@
-/*! @mainpage Proyecto 2
+/*! @mainpage Proyecto 2 ejercicio 3-b
  *
- * \section genDesc General Description
- *
+ * @section m Proyecto 2
+ * 
  * Este codigo es un detector de proximidad dando respuestas diferentes ante una magnitud definda por rangos de distancias
  * En el mismo se procede a mediante interrupciones y otras herramientas a leer una entrada y cambiar la posicion de las variables que modifican el estado de una medicacion mediante leds.
  * Ademas, mediante un  sensor de ultrasonido tomamos la distancia y la visualizamos en consola o terminal y un lcd.
- * @section changelog Changelog
+ * 
  *
- * |   Date	    | Description                                    |
- * |:----------:|:-----------------------------------------------|
- * | 30/04/2024 | Document creation		                         |
+ * |   Date	    | 
+ * |:----------:|
+ * | 30/04/2024 | 
  *
  * @author Quiroga Eugenio (eugenioquirogabio@gmail.com)
  *
@@ -31,14 +31,17 @@
 
 
 /*==================[macros and definitions]=================================*/
+/** @def PERIODO_MEDICION 
+* @brief define el periodo de medicion  
+*/
 #define PERIODO_MEDICION 1000000
 
 /*==================[internal data definition]===============================*/
 
-TaskHandle_t led1_task_handle = NULL;
-TaskHandle_t led2_task_handle = NULL;
-TaskHandle_t led3_task_handle = NULL;
-TaskHandle_t led4_task_handle = NULL;
+TaskHandle_t task_handle_1 = NULL;
+TaskHandle_t task_handle_2 = NULL;
+TaskHandle_t task_handle_3 = NULL;
+
 
 gpio_t ECHO = GPIO_3;
 gpio_t TRIGGER = GPIO_2;
@@ -50,11 +53,11 @@ uint16_t distancia; // defino variable global
 
 /*==================[internal functions declaration]=========================*/
 
-/** @fn void Escribir()
+/** @fn  void Escribir()
  * @brief Escribe en la uart la distancia 
  * @return 
  */
-static void Escribir(){
+void Escribir(){
 UartSendString(UART_PC,"distancia");
 UartSendString(UART_PC,(char *)UartItoa(distancia,10));
 UartSendString(UART_PC,"cm\r\n");
@@ -67,20 +70,20 @@ UartSendString(UART_PC,"cm\r\n");
  * @return 
  */
 
-void FuncTimermedir(void *param)
+    void FuncTimermedir(void *param)
 {
-    vTaskNotifyGiveFromISR(led2_task_handle, pdFALSE);
-    vTaskNotifyGiveFromISR(led3_task_handle, pdFALSE);
-    vTaskNotifyGiveFromISR(led4_task_handle, pdFALSE);
+    vTaskNotifyGiveFromISR(task_handle_1, pdFALSE);
+    vTaskNotifyGiveFromISR(task_handle_2, pdFALSE);
+    vTaskNotifyGiveFromISR(task_handle_3, pdFALSE);
 }
 
 
-/** @fn static void Medir(void *param)
+/** @fn void Medir(void *param)
  * @brief Mide la distancia bajo la condicion de que la tecla 1 no este activa  
  * @return 
  */
 
-static void Medir(void *p)
+void Medir(void *p)
 {
     while (1)
     {
@@ -92,12 +95,12 @@ static void Medir(void *p)
         }
     }
 }
-/** @fn static void consola()
+/** @fn  void consola()
  * @brief Consola lee la letra O o la letra H y cambia la posicion de la tecla uno o dos segun corresponda 
  * @return 
  */
 
-static void consola(){
+ void consola(){
     uint8_t letras;
     UartReadByte(UART_PC, &letras);
     switch(letras){
@@ -111,11 +114,11 @@ static void consola(){
     }
 }
 
-/** @fn static void cargarLCD(void *p)
+/** @fn void cargarLCD(void *p)
  * @brief Cargar lcd se encarga de mostrar  la distancia si la tecla 1 esta en alto y la tecla dos en bajo por el lcd. En el caso de estar presionada la tecla uno lo que realizara es apagar la pantalla lcd. Tambien realiza el llamado a la uart.
  *  @return 
  */
-static void cargarLCD(void *p)
+ void cargarLCD(void *p)
 {
 
     while (1)
@@ -135,29 +138,29 @@ static void cargarLCD(void *p)
         Escribir();
     }
 }
-/** @fn static void cargar_TCL1(void *p)
+/** @fn void cargar_TCL1(void *p)
  * @brief cambia la posicion de la tecla uno 
  *  @return 
  */
-static void cargar_TCL1(void *p)
+ void cargar_TCL1(void *p)
 {
     TEC1 = !TEC1;
 }
-/** @fn static void cargar_TCL2(void *p)
+/** @fn void cargar_TCL2(void *p)
  * @brief cambia la posicion de la tecla dos 
  *  @return 
  */
-static void cargar_TCL2(void *p)
+void cargar_TCL2(void *p)
 {
     TEC2 = !TEC2;
 }
 
-/** @fn static void modificar_leds(void *p)
+/** @fn void modificar_leds(void *p)
  * @brief Modifica el estado de los leds leyendo la distancia. 
  *  @return 
  */
 
-static void modificar_leds(void *p)
+ void modificar_leds(void *p)
 {
     while (1)
     {
@@ -225,9 +228,9 @@ void app_main(void)
     SwitchActivInt(SWITCH_2, &cargar_TCL2, NULL);
 
     // xTaskCreate(cargar_teclas, "Cargar estado de switch", 1024, NULL, 5, &led1_task_handle);
-    xTaskCreate(Medir, "Medir", 2024, NULL, 5, &led2_task_handle);
-    xTaskCreate(cargarLCD, "cargar_LCD", 2024, NULL, 5, &led3_task_handle);
-    xTaskCreate(modificar_leds, "Modifica_Estados", 2024, NULL, 5, &led4_task_handle);
+    xTaskCreate(Medir, "Medir", 2024, NULL, 5, &task_handle_1);
+    xTaskCreate(cargarLCD, "cargar_LCD", 2024, NULL, 5, &task_handle_2);
+    xTaskCreate(modificar_leds, "Modifica_Estados", 2024, NULL, 5, &task_handle_3);
 
     TimerStart(medir.timer);
 

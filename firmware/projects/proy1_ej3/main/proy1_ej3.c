@@ -82,7 +82,7 @@ struct leds
 
 /*==================[internal functions declaration]=========================*/
 /** @fn void controlar_led(struct leds *ptr_led)
- * @brief Fucion que a traves de un puntero del tipo struct leds controla que hacer con 3 leds distintos y combinacion de los mismos a traves de 3 modos distintos. 
+ * @brief Funcion que a traves de un puntero del tipo struct leds controla que hacer con 3 leds distintos y combinacion de los mismos a traves de 3 modos distintos. 
  * Modo ON o 1 ,toma el numero de led y lo enciende. 
  * Modo OFF o 0, toma el numero del led y lo apaga o pone en 0.
  * Modo 3 o toggle mira el led que tiene cargado lo hace parpadear y le aplica un retardo.  

@@ -107,7 +107,8 @@ static void AD_conversor(){
     while (1){
     ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
      AnalogInputReadSingle(CH1, valorAnalogico);
-     Escribir();     
+    
+    Escribir();     
      
 
     }
@@ -137,7 +138,7 @@ void app_main(void)
     timer_config_t conv = {
         .timer = TIMER_A,
         .period = tiempo_de_conversionDA,
-        .func_p = &FuncConvertirAD,
+        .func_p = &FuncConvertirDA,
         .param_p = NULL,
     };
     TimerInit(&conv);
@@ -167,6 +168,14 @@ void app_main(void)
     };
     UartInit(&my_uart);
 
+     analog_input_config_t salida_analoga = {
+        .input= CH0,			/*!< Inputs: CH0, CH1, CH2, CH3 */
+	    .mode= ADC_SINGLE,		/*!< Mode: single read or continuous read */
+	    .func_p = NULL,			/*!< Pointer to callback function for convertion end (only for continuous mode) */
+        .param_p = NULL,			/*!< Pointer to callback function parameters (only for continuous mode) */
+	    .sample_frec = NULL,
+        };
+        AnalogOutputInit();
     
 
       
@@ -179,6 +188,7 @@ void app_main(void)
         };
     
     AnalogInputInit(&entrada_analoga);
+    
 
     
 

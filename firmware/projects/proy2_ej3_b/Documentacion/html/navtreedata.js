@@ -25,7 +25,7 @@
 var NAVTREE =
 [
   [ "Proyecto 2 Ejercicio 3-b", "index.html", [
-    [ "Proyecto 2", "index.html", "index" ],
+    [ "Proyecto 2", "index.html#m", null ],
     [ "Ejemplo blinking tasks", "md__c_1_2_repositorio_2_quiroga-1_c-2024_2firmware_2projects_2proy2__ej3__b_2_r_e_a_d_m_e.html", [
       [ "Cómo usar el ejemplo", "md__c_1_2_repositorio_2_quiroga-1_c-2024_2firmware_2projects_2proy2__ej3__b_2_r_e_a_d_m_e.html#autotoc_md1", null ]
     ] ],
@@ -62,11 +62,11 @@ var NAVTREEINDEX =
 "config_2sdkconfig_8h.html#a67a6d665723a8f7434be98fb07ef86aa",
 "config_2sdkconfig_8h.html#ab58f84414a4d021d2e906a6c9625b867",
 "config_2sdkconfig_8h.html#afdd1ac7fc7ba65a592a909bf3154ab09",
-"group___i2_c.html#ga37a0707200e50e3b3e9ab28b1b8d6777",
-"group___m_p_u6050.html#ga484dc2c64005652ff208840ddc8c1cff",
-"group___m_p_u6050.html#gab64e78a35138012905b39bce57bc11ad",
-"group___w_s2812_b.html#ga10677d455b434a1fb0ac83c343551647",
-"structspi__mcu__config__t.html#a4737b644103a7cbe225b36724f8d9120"
+"group___i2_c.html#ga1900aab43da6013cadb944301c929562",
+"group___m_p_u6050.html#ga45df54d78cf3afa33dd63a463749ffa4",
+"group___m_p_u6050.html#gab62ffbd26174f1ec37088a3217fdb14e",
+"group___w_s2812_b.html",
+"structserial__config__t.html#a27067c816e8c5402c7be0da9780678b0"
 ];
 
 var SYNCONMSG = 'pulsar para deshabilitar sincronización';
