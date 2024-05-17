@@ -1,0 +1,4 @@
+var searchData=
+[
+  ['que_20digitalice_20una_20señal_20analógica_20y_20la_20transmita_20a_20un_20graficador_20de_20puerto_20serie_20de_20la_20pc_20se_20debe_20tomar_20la_20entrada_20ch1_20del_20conversor_20ad_20y_20la_20transmisión_20se_20debe_20realizar_20por_20la_20uart_20conectada_20al_20puerto_20serie_20de_20la_20pc_20en_20un_20formato_20compatible_20con_20un_20graficador_20por_20puerto_20serie_0',['Diseñar e implementar una aplicación, basada en el driver analog_io_mcu.h y el driver de transmisión serie uart_mcu.h, que digitalice una señal analógica y la transmita a un graficador de puerto serie de la PC. Se debe tomar la entrada CH1 del conversor AD y la transmisión se debe realizar por la UART conectada al puerto serie de la PC, en un formato compatible con un graficador por puerto serie.',['../index.html#m',1,'']]]
+];

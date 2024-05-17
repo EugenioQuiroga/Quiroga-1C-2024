@@ -32,6 +32,12 @@
         },
         {
             "path": "projects/proy2_ej4"
+        },
+        {
+            "path": "projects/proy_3"
+        },
+        {
+            "path": "drivers"
         }
     ],
     "settings": {
@@ -86,7 +92,11 @@
             "ili9341.h": "c",
             "soc_caps.h": "c",
             "mpu6050.h": "c",
-            "i2c_mcu.h": "c"
+            "i2c_mcu.h": "c",
+            "*.tcc": "c",
+            "cstdio": "c",
+            "cstdlib": "c",
+            "cwchar": "c"
         },
     },
     "tasks": {

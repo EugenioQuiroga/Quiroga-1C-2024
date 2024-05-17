@@ -1,14 +1,14 @@
-/*! @mainpage Blinking
+/*! @mainpage Proyecto 2 ejercicio 4
  *
- * \section Diseñar e implementar una aplicación, basada en el driver analog_io_mcu.h y el driver de transmisión serie uart_mcu.h, que digitalice una señal analógica y la transmita a un graficador de puerto serie de la PC. Se debe tomar la entrada CH1 del conversor AD y la transmisión se debe realizar por la UART conectada al puerto serie de la PC, en un formato compatible con un graficador por puerto serie. 
+ * \section m Se diseño e implemento una aplicación, basada en el driver analog_io_mcu.h y el driver de transmisión serie uart_mcu.h, que digitaliza una señal analógica y la transmita a un graficador de puerto serie de la PC. Se debe tomar la entrada CH1 del conversor AD y la transmisión se debe realizar por la UART conectada al puerto serie de la PC, en un formato compatible con un graficador por puerto serie. 
 
 
  * 
- * @section changelog Changelog
+ * @section changelog 
  *
- * |   Date	    | Description                                    |
- * |:----------:|:-----------------------------------------------|
- * | 30/04/2024 | Document creation		                         |
+ * |   Date	    |
+ * |:----------:|
+ * | 30/04/2024 |
  *
  * @author Quiroga Eugenio (Eugeniquirogabio@gmail.com)
  *
@@ -31,19 +31,41 @@
 
 
 /*==================[macros and definitions]=================================*/
+/**
+ * @def PERIODO_MEDICION Periodo de medicion  
+*/
 #define PERIODO_MEDICION 1000000
+/**
+ * @def tiempo_de_conversionDA tiempo de convercion digital a analogico  
+*/
 #define tiempo_de_conversionDA 2000
+/**
+ * @def tiempo_de_conversionAD tiempo de conversion analogico a digital
+*/
 #define tiempo_de_conversionAD 4000
+/**
+ * @def tamaño del buffer 
+*/
 #define BUFFER_SIZE 231
 
 /*==================[internal data definition]===============================*/
-
+/**
+ * @brief Atributo para tarea DA_conversor 
+*/
 TaskHandle_t handle_conversorDA = NULL;
+/**
+ * @brief Atributo para tarea AD_conversor 
+*/
 TaskHandle_t handle_conversorAD = NULL;
 
+/**
+ * @brief para guardar  el valor analogico
+*/
 uint16_t valorAnalogico; // defino variable global
 
-
+/**
+ * @brief Matriz de const char 
+*/
 const char ecg[BUFFER_SIZE] = {
     76, 77, 78, 77, 79, 86, 81, 76, 84, 93, 85, 80,
     89, 95, 89, 85, 93, 98, 94, 88, 98, 105, 96, 91,
@@ -67,46 +89,50 @@ const char ecg[BUFFER_SIZE] = {
 
 /*==================[internal functions declaration]=========================*/
 
-
-static void Escribir(){
-UartSendString(UART_PC,"señal es:");
+/**
+ * @fn void Escribir()
+ * @brief Escribe mediante la uart en consola 
+*/
+void Escribir(){
+//UartSendString(UART_PC,"señal es:");
 UartSendString(UART_PC,(char *)UartItoa(valorAnalogico,10));
-UartSendString(UART_PC,"cm\r\n");
+UartSendString(UART_PC,"\r");
 
 }
 
 
+/**
+ * @fn DA_conversor()
+ * @brief Convierte una señal digital a analogica  
+*/
 
-
-
-static void DA_conversor(){
+void DA_conversor(){
  uint8_t aux=0;
 
     while (1){
     ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
           
-          
-        if(aux==BUFFER_SIZE){
+    AnalogOutputWrite(ecg[aux]);
+        aux++; 
+    if(aux==BUFFER_SIZE){
 
-            aux=0;
+        aux=0;
 
        }
 
-        AnalogOutputWrite(ecg[aux]);
-        aux++;
         
-
-       
-
     }
 }
-
-static void AD_conversor(){
+/**
+ * @fn AD_conversor()
+ * @brief Convierte una señal analogica a digital  y muestrea mediante la funcion escribir. 
+*/
+void AD_conversor(){
  
 
     while (1){
     ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
-     AnalogInputReadSingle(CH1, valorAnalogico);
+     AnalogInputReadSingle(CH1, &valorAnalogico); //valorAnalogico va por referencia
     
     Escribir();     
      
@@ -114,21 +140,26 @@ static void AD_conversor(){
     }
 }
 
-
+/**
+ * @fn FuncConvertirAD()
+ * @brief Convierte una señal analogica a digital 
+*/
 void FuncConvertirAD(void *param)
 {
-    vTaskNotifyGiveFromISR(tiempo_de_conversionDA, pdFALSE);
-
+    vTaskNotifyGiveFromISR(handle_conversorAD, pdFALSE);
     
 }
+
+/**
+ * @fn FuncConvertirDA()
+ * @brief Convierte una señal analogica a digital 
+*/
 
 void FuncConvertirDA(void *param)
 {
-    vTaskNotifyGiveFromISR(tiempo_de_conversionAD, pdFALSE);
-
-    
+    vTaskNotifyGiveFromISR(handle_conversorDA, pdFALSE);
+   
 }
-
 
 /*==================[external functions definition]==========================*/
 void app_main(void)
@@ -153,8 +184,8 @@ void app_main(void)
     TimerInit(&conv1);
    
  
-    xTaskCreate(AD_conversor, "conversor AD", 1024, NULL, 5, handle_conversorAD);
-    xTaskCreate(DA_conversor, "Conversor DA", 1024, NULL, 5, handle_conversorDA);
+    xTaskCreate(AD_conversor, "conversor AD", 4000, NULL, 5, &handle_conversorAD);
+    xTaskCreate(DA_conversor, "Conversor DA", 4000, NULL, 5, &handle_conversorDA);
     
 
     TimerStart(conv.timer);
@@ -162,36 +193,21 @@ void app_main(void)
 
   serial_config_t my_uart={
         .port=UART_PC,
-	    .baud_rate=tiempo_de_conversionAD,					
+	    .baud_rate=115200,					
         .func_p=NULL,
         .param_p=NULL,
     };
     UartInit(&my_uart);
 
-     analog_input_config_t salida_analoga = {
-        .input= CH0,			/*!< Inputs: CH0, CH1, CH2, CH3 */
-	    .mode= ADC_SINGLE,		/*!< Mode: single read or continuous read */
-	    .func_p = NULL,			/*!< Pointer to callback function for convertion end (only for continuous mode) */
-        .param_p = NULL,			/*!< Pointer to callback function parameters (only for continuous mode) */
-	    .sample_frec = NULL,
-        };
-        AnalogOutputInit();
-    
-
+    AnalogOutputInit();
       
     analog_input_config_t entrada_analoga = {
-        .input= CH1,			/*!< Inputs: CH0, CH1, CH2, CH3 */
-	    .mode= ADC_SINGLE,		/*!< Mode: single read or continuous read */
-	    .func_p = NULL,			/*!< Pointer to callback function for convertion end (only for continuous mode) */
-        .param_p = NULL,			/*!< Pointer to callback function parameters (only for continuous mode) */
-	    .sample_frec = NULL,
+        .input= CH1,			// Inputs: CH1
+	    .mode= ADC_SINGLE,		// Mode: single read or continuous read
+	    .func_p = NULL,			//Pointer to callback function for convertion end (only for continuous mode) 
+        .param_p = NULL,		// Pointer to callback function parameters (only for continuous mode) 
+	    .sample_frec = 0,
         };
     
     AnalogInputInit(&entrada_analoga);
-    
-
-    
-
-
-
 }
