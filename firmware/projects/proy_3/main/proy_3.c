@@ -1,258 +1,207 @@
-/*! @mainpage Proyecto 2 ejercicio 4
- *
- * \section m Se diseño e implemento una aplicación, basada en el driver analog_io_mcu.h y el driver de transmisión serie uart_mcu.h, que digitaliza una señal analógica y la transmita a un graficador de puerto serie de la PC. Se debe tomar la entrada CH1 del conversor AD y la transmisión se debe realizar por la UART conectada al puerto serie de la PC, en un formato compatible con un graficador por puerto serie. 
 
 
- * 
- * @section changelog 
+/*! @mainpage Ejemplo Bluetooth - Filter
  *
- * |   Date	    |
- * |:----------:|
- * | 30/04/2024 |
+ * @section genDesc General Description
  *
- * @author Quiroga Eugenio (Eugeniquirogabio@gmail.com)
+ * This section describes how the program works.
+ *
+ * <a href="https://drive.google.com/...">Operation Example</a>
+ *
+ * @section hardConn Hardware Connection
+ *
+ * |    Peripheral  |   ESP32   	|
+ * |:--------------:|:--------------|
+ * | 	PIN_X	 	| 	GPIO_X		|
+ *
+ *
+ * @section changelog Changelog
+ *
+ * |   Date	    | Description                                    |
+ * |:----------:|:-----------------------------------------------|
+ * | 12/09/2023 | Document creation		                         |
+ *
+ * @author Albano Peñalva (albano.penalva@uner.edu.ar)
  *
  */
 
 /*==================[inclusions]=============================================*/
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "led.h"
-#include "hc_sr04.h"
-#include "lcditse0803.h"
-#include "switch.h"
-#include "timer_mcu.h"
-#include "uart_mcu.h"
-#include "analog_io_mcu.h"
+#include "neopixel_stripe.h"
 #include "ble_mcu.h"
+#include "timer_mcu.h"
 
-
-
+#include "iir_filter.h"
 /*==================[macros and definitions]=================================*/
-/**
- * @def PERIODO_MEDICION Periodo de medicion  
-*/
-#define PERIODO_MEDICION 1000000
-/**
- * @def tiempo_de_conversionDA tiempo de convercion digital a analogico  
-*/
-#define tiempo_de_conversionDA 2000
-/**
- * @def tiempo_de_conversionAD tiempo de conversion analogico a digital
-*/
-#define tiempo_de_conversionAD 4000
-/**
- * @def tamaño del buffer 
-*/
-
-
-#define BUFFER_SIZE 231
-
+#define CONFIG_BLINK_PERIOD 500
+#define LED_BT	            LED_1
+#define BUFFER_SIZE         256
+#define SAMPLE_FREQ	        200
+#define T_SENIAL            4000 
+#define CHUNK               4
+#define TAMANO               256
 /*==================[internal data definition]===============================*/
-/**
- * @brief Atributo para tarea DA_conversor 
-*/
-TaskHandle_t handle_conversorDA = NULL;
-/**
- * @brief Atributo para tarea AD_conversor 
-*/
-TaskHandle_t handle_conversorAD = NULL;
-
-
-/**
- * @brief para guardar  el valor analogico
-*/
-uint16_t valorAnalogico; // defino variable global
-
-bool transmitir=false;
-
-/**
- * @brief Matriz de const char 
-*/
-uint8_t ecg[BUFFER_SIZE] = {
-    76, 77, 78, 77, 79, 86, 81, 76, 84, 93, 85, 80,
-    89, 95, 89, 85, 93, 98, 94, 88, 98, 105, 96, 91,
-    99, 105, 101, 96, 102, 106, 101, 96, 100, 107, 101,
-    94, 100, 104, 100, 91, 99, 103, 98, 91, 96, 105, 95,
-    88, 95, 100, 94, 85, 93, 99, 92, 84, 91, 96, 87, 80,
-    83, 92, 86, 78, 84, 89, 79, 73, 81, 83, 78, 70, 80, 82,
-    79, 69, 80, 82, 81, 70, 75, 81, 77, 74, 79, 83, 82, 72,
-    80, 87, 79, 76, 85, 95, 87, 81, 88, 93, 88, 84, 87, 94,
-    86, 82, 85, 94, 85, 82, 85, 95, 86, 83, 92, 99, 91, 88,
-    94, 98, 95, 90, 97, 105, 104, 94, 98, 114, 117, 124, 144,
-    180, 210, 236, 253, 227, 171, 99, 49, 34, 29, 43, 69, 89,
-    89, 90, 98, 107, 104, 98, 104, 110, 102, 98, 103, 111, 101,
-    94, 103, 108, 102, 95, 97, 106, 100, 92, 101, 103, 100, 94, 98,
-    103, 96, 90, 98, 103, 97, 90, 99, 104, 95, 90, 99, 104, 100, 93,
-    100, 106, 101, 93, 101, 105, 103, 96, 105, 112, 105, 99, 103, 108,
-    99, 96, 102, 106, 99, 90, 92, 100, 87, 80, 82, 88, 77, 69, 75, 79,
-    74, 67, 71, 78, 72, 67, 73, 81, 77, 71, 75, 84, 79, 77, 77, 76, 76,
+float ecg[] = {
+     76,  76,  77,  77,  76,  83,  85,  78,  76,  85,  93,  85,  79,
+     86,  93,  93,  85,  87,  94,  98,  93,  87,  95, 104,  99,  91,
+     93, 102, 104,  99,  96, 101, 106, 102,  96,  97, 104, 106,  97,
+     94, 100, 103, 101,  91,  95, 103, 100,  94,  90,  98, 104,  94,
+     87,  93,  99,  97,  87,  86,  96,  98,  90,  83,  90,  96,  89,
+     81,  80,  87,  92,  82,  78,  84,  89,  80,  72,  78,  82,  82,
+     73,  72,  81,  82,  79,  69,  77,  82,  81,  76,  68,  78,  80,
+     76,  73,  78,  82,  82,  75,  72,  86,  84,  78,  76,  85,  95,
+     88,  81,  83,  93,  90,  86,  83,  88,  93,  86,  82,  82,  92,
+     89,  82,  82,  88,  94,  84,  82,  90,  98,  94,  87,  91,  95,
+     98,  93,  90,  97, 104, 105,  96,  93, 107, 116, 118, 127, 148,
+    181, 208, 231, 252, 241, 198, 139,  76,  43,  32,  29,  42,  65,
+     86,  90,  88,  93, 101, 107, 102,  98, 103, 110, 104,  98,  99,
+    107, 109,  96,  95, 103, 107, 102,  95,  95, 102, 105,  94,  94,
+    102, 102,  99,  94,  96, 102,  99,  90,  92, 100, 102,  95,  90,
+     98, 104,  97,  89,  94, 102, 103,  97,  93, 100, 105, 102,  93,
+     97, 104, 104, 100,  96, 108, 111, 104,  99, 101, 108, 102,  96,
+     97, 104, 104,  97,  89,  91, 100,  91,  81,  79,  85,  86,  73,
+     69,  75,  79,  75,  68,  68,  76,  76,  69,  67,  74,  81,  77,
+     71,  72,  82,  82,  76,  77,  76,  76,  75
 };
+static float ecg_filt[CHUNK];
+static float ecg_filtrado[TAMANO];
+
+TaskHandle_t fft_task_handle = NULL;
+bool filter = false;
+
+float max1=0;
+float ultimo_valor=0;
+uint8_t PosMax1=0;
 
 
 /*==================[internal functions declaration]=========================*/
 
-
-void transmitir_dato(uint8_t * data, uint8_t length){
-
-if(data[0] == 'R'){
-   
-    transmitir = !transmitir;
-}
-
-}
-
-
-
-/**
- * @fn void Escribir()
- * @brief Escribe mediante la uart en consola 
-*/
-
-
-void Escribir(){
-//UartSendString(UART_PC,"señal es:");
-UartSendString(UART_PC,(char *)UartItoa(valorAnalogico,10));
-UartSendString(UART_PC,"\r");
-
-}
-
-
-/**
- * @fn DA_conversor()
- * @brief Convierte una señal digital a analogica  
-*/
-
-void DA_conversor(){
- uint8_t aux=0;
-
-    while (1){
-    ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
-          
-    AnalogOutputWrite(ecg[aux]);
-        aux++; 
-    if(aux==BUFFER_SIZE){
-
-        aux=0;
-
-       }
-
+void maximos(){
+    for(uint8_t h=0;h<TAMANO;h++){
+        if(ecg_filtrado[h]>200){
+                 if((h==0) && ((ecg_filtrado[h]-ultimo_valor)>0) && ((ecg_filtrado[h]-ecg_filtrado[h+1])>0)){
+                    
         
-    }
-}
-/**
- * @fn AD_conversor()
- * @brief Convierte una señal analogica a digital  y muestrea mediante la funcion escribir. 
-*/
-void AD_conversor(){
-    char msg[48];
-    while (1){
-    ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
-     AnalogInputReadSingle(CH1, &valorAnalogico); //valorAnalogico va por referencia
-    
-    Escribir(); 
-    if(transmitir=true){
+                 }
+
+                 if( (h = !0) && ((ecg_filtrado[h]-ecg_filtrado[h-1])>0) && ((ecg_filtrado[h]-ecg_filtrado[h+1])>0)){
+
+         }
+                 else  {ecg_filtrado[h]=0;}
+        }
         
-    sprintf(msg, "valor\n", valorAnalogico);
+        else  {ecg_filtrado[h]=0;}
+         
+               
+         
 
-    BleSendString(msg);
-    
+
     }
-     
+    
+    
+    ultimo_valor=ecg_filtrado[TAMANO];
+}
 
+void read_data(uint8_t * data, uint8_t length){
+    switch(data[0]){
+        case 'A':
+            filter = true;
+            break;
+        case 'a':
+            filter = false;
+            break;
     }
 }
 
 
-/**
- * @fn FuncConvertirAD()
- * @brief Convierte una señal analogica a digital 
-*/
-void FuncConvertirAD(void *param)
-{
-    vTaskNotifyGiveFromISR(handle_conversorAD, pdFALSE);
-    
+void FuncTimerSenial(void* param){
+    xTaskNotifyGive(fft_task_handle);
 }
 
-/**
- * @fn FuncConvertirDA()
- * @brief Convierte una señal analogica a digital 
-*/
+static void FftTask(void *pvParameter){
+    char msg[128];
+    char msg_chunk[24];
+    static uint8_t indice = 0;
+    int j=0;
+    while(true){
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if(filter){
+            HiPassFilter(&ecg[indice], ecg_filt, CHUNK);
+            LowPassFilter(ecg_filt, ecg_filt, CHUNK);
+        } else{
+            memcpy(ecg_filt, &ecg[indice], CHUNK*sizeof(float));
+        }
+        strcpy(msg, "");
+        for(uint8_t i=0; i<CHUNK; i++){
+            if(j==256){
+                j=0;
+               maximos(); //llamo a la funcion para detectar los 2 Q
+                    
+            }
+            else{
+                j++;
+                ecg_filtrado[j]=ecg_filt[i];
+                sprintf(msg_chunk, "*G%.2f*", ecg_filt[i]);
+                strcat(msg, msg_chunk);
+        }}
+        indice += CHUNK;
 
-void FuncConvertirDA(void *param)
-{   
-    
-    vTaskNotifyGiveFromISR(handle_conversorDA, pdFALSE);
-    
+        BleSendString(msg);
+    }
 }
-
-
-
-
-
 /*==================[external functions definition]==========================*/
-void app_main(void)
-{
-   
-
-    timer_config_t conv = {
-        .timer = TIMER_A,
-        .period = tiempo_de_conversionDA,
-        .func_p = &FuncConvertirDA,
-        .param_p = NULL,
+void app_main(void){
+    uint8_t blink = 0;
+    static neopixel_color_t color;
+    ble_config_t ble_configuration = {
+        "CintaDeCorrer",
+        read_data
     };
-    TimerInit(&conv);
-
-
-    timer_config_t conv1 = {
+    timer_config_t timer_senial = {
         .timer = TIMER_B,
-        .period = tiempo_de_conversionAD,
-        .func_p = &FuncConvertirAD,
-        .param_p = NULL,
+        .period = T_SENIAL*CHUNK,
+        .func_p = FuncTimerSenial,
+        .param_p = NULL
     };
-    TimerInit(&conv1);
 
-
-
-    //Inicializacion de timer
-    TimerStart(conv.timer);
-    TimerStart(conv1.timer);
-   
-   
- 
-    xTaskCreate(AD_conversor, "conversor AD", 4000, NULL, 5, &handle_conversorAD);
-    xTaskCreate(DA_conversor, "Conversor DA", 4000, NULL, 5, &handle_conversorDA);
-   
-
+    NeoPixelInit(BUILT_IN_RGB_LED_PIN, BUILT_IN_RGB_LED_LENGTH, &color);
+    NeoPixelAllOff();
+    TimerInit(&timer_senial);
+    LedsInit();  
+    LowPassInit(SAMPLE_FREQ, 30, ORDER_2);
+    HiPassInit(SAMPLE_FREQ, 1, ORDER_2);
+    BleInit(&ble_configuration);
     
-  serial_config_t my_uart={
-        .port=UART_PC,
-	    .baud_rate=115200,					
-        .func_p=NULL,
-        .param_p=NULL,
-    };
-    UartInit(&my_uart);
+    xTaskCreate(&FftTask, "FFT", 4096, NULL, 5, &fft_task_handle);
+    TimerStart(timer_senial.timer);
 
-    AnalogOutputInit();
-      
-    analog_input_config_t entrada_analoga = {
-        .input= CH1,			// Inputs: CH1
-	    .mode= ADC_SINGLE,		// Mode: single read or continuous read
-	    .func_p = NULL,			//Pointer to callback function for convertion end (only for continuous mode) 
-        .param_p = NULL,		// Pointer to callback function parameters (only for continuous mode) 
-	    .sample_frec = 0,
-        };
+    while(1){
+        vTaskDelay(CONFIG_BLINK_PERIOD / portTICK_PERIOD_MS);
+        switch(BleStatus()){
+            case BLE_OFF:
+                NeoPixelAllOff();
+            break;
+            case BLE_DISCONNECTED:
+                if(blink%2){
+                    NeoPixelAllColor(NEOPIXEL_COLOR_BLUE);
+                }else{
+                    NeoPixelAllOff();
+                }
+                blink++;
+            break;
+            case BLE_CONNECTED:
+                NeoPixelAllColor(NEOPIXEL_COLOR_BLUE);
+            break;
+        }
+    }
     
-    AnalogInputInit(&entrada_analoga);
-
-    //Para recibir el dato por bluetooth
-     ble_config_t bluet = {
-       .device_name = "Programable",
-       .func_p = transmitir_dato,
-     };
-
-     BleInit(&bluet);
 }
+
+

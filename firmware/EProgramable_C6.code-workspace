@@ -1,43 +1,60 @@
 {
     "folders": [
         {
-            "path": "./projects/0_blinking"
+            "name": "drivers",
+            "path": "drivers"
         },
         {
-            "path": "./projects/1_blinking_switch"
+            "name": "middelware",
+            "path": "middelware"
         },
         {
+            "name": "0_blinking",
+            "path": "projects/0_blinking"
+        },
+        {
+            "name": "1_blinking_switch",
+            "path": "projects/1_blinking_switch"
+        },
+        {
+            "name": "2_blinking_tasks",
             "path": "projects/2_blinking_tasks"
         },
         {
-            "path": "./projects/x_template"
+            "name": "x_template",
+            "path": "projects/x_template"
         },
         {
+            "name": "proy1_ej3",
             "path": "projects/proy1_ej3"
         },
         {
+            "name": "Guia1_Ej4",
             "path": "projects/Guia1_Ej4"
         },
         {
+            "name": "proy_2",
             "path": "projects/proy_2"
         },
         {
+            "name": "proy2_ej2",
             "path": "projects/proy2_ej2"
         },
         {
+            "name": "proy2_ej3",
             "path": "projects/proy2_ej3"
         },
         {
+            "name": "proy2_ej3_b",
             "path": "projects/proy2_ej3_b"
         },
         {
+            "name": "proy2_ej4",
             "path": "projects/proy2_ej4"
         },
         {
+            "name": "proy_3",
             "path": "projects/proy_3"
-        },
-        {
-            "path": "drivers"
         }
     ],
     "settings": {
@@ -96,7 +113,9 @@
             "*.tcc": "c",
             "cstdio": "c",
             "cstdlib": "c",
-            "cwchar": "c"
+            "cwchar": "c",
+            "ble_mcu.h": "c",
+            "iir_filter.h": "c"
         },
     },
     "tasks": {
