@@ -46,7 +46,7 @@
 #define SAMPLE_FREQ	        200
 #define T_SENIAL            4000 
 #define CHUNK               4
-#define TAMANO               256
+#define TAMANO              512
 /*==================[internal data definition]===============================*/
 float ecg[] = {
      76,  76,  77,  77,  76,  83,  85,  78,  76,  85,  93,  85,  79,
@@ -71,6 +71,7 @@ float ecg[] = {
      71,  72,  82,  82,  76,  77,  76,  76,  75
 };
 static float ecg_filt[CHUNK];
+
 static float ecg_filtrado[TAMANO];
 
 TaskHandle_t fft_task_handle = NULL;
@@ -78,36 +79,39 @@ bool filter = false;
 
 float max1=0;
 float ultimo_valor=0;
-uint8_t PosMax1=0;
+int PosMax1=0;
+int u=0;
+int aux=0;
+int Ntiempo=0;
 
 
 /*==================[internal functions declaration]=========================*/
 
 void maximos(){
-    for(uint8_t h=0;h<TAMANO;h++){
-        if(ecg_filtrado[h]>200){
-                 if((h==0) && ((ecg_filtrado[h]-ultimo_valor)>0) && ((ecg_filtrado[h]-ecg_filtrado[h+1])>0)){
+    int p=0; 
+  
+    
+            while(p<512){
+                
+                if(p==511){ultimo_valor=ecg_filtrado[p];}
+
+                if(ecg_filtrado[p]>200){
+                if(((p==0) && ((ecg_filtrado[p]-ultimo_valor)>0) && ((ecg_filtrado[p]-ecg_filtrado[p+1])>0 ))||((p = !0) && ((ecg_filtrado[p]-ecg_filtrado[p-1])>0) && ((ecg_filtrado[p]-ecg_filtrado[p+1])>0)) ){
                     
-        
-                 }
-
-                 if( (h = !0) && ((ecg_filtrado[h]-ecg_filtrado[h-1])>0) && ((ecg_filtrado[h]-ecg_filtrado[h+1])>0)){
-
-         }
-                 else  {ecg_filtrado[h]=0;}
-        }
-        
-        else  {ecg_filtrado[h]=0;}
-         
-               
-         
+                    Ntiempo=aux;
+                    aux=0;
+                    
+                }}
+                aux++;
+                p++;
 
 
-    }
-    
-    
-    ultimo_valor=ecg_filtrado[TAMANO];
+            }
+
 }
+    
+    
+
 
 void read_data(uint8_t * data, uint8_t length){
     switch(data[0]){
@@ -120,7 +124,6 @@ void read_data(uint8_t * data, uint8_t length){
     }
 }
 
-
 void FuncTimerSenial(void* param){
     xTaskNotifyGive(fft_task_handle);
 }
@@ -129,7 +132,6 @@ static void FftTask(void *pvParameter){
     char msg[128];
     char msg_chunk[24];
     static uint8_t indice = 0;
-    int j=0;
     while(true){
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         if(filter){
@@ -138,19 +140,19 @@ static void FftTask(void *pvParameter){
         } else{
             memcpy(ecg_filt, &ecg[indice], CHUNK*sizeof(float));
         }
+
+                                //funcion para hacer todo cero(con los 4)valores leidos 
+    
         strcpy(msg, "");
         for(uint8_t i=0; i<CHUNK; i++){
-            if(j==256){
-                j=0;
-               maximos(); //llamo a la funcion para detectar los 2 Q
-                    
-            }
-            else{
-                j++;
-                ecg_filtrado[j]=ecg_filt[i];
+                ecg_filtrado[u]=ecg_filt[i];
+                 u++;
+                if(u==511){u=0;} //llamar a calcular maximos           
+                            
                 sprintf(msg_chunk, "*G%.2f*", ecg_filt[i]);
                 strcat(msg, msg_chunk);
-        }}
+       
+        }
         indice += CHUNK;
 
         BleSendString(msg);
