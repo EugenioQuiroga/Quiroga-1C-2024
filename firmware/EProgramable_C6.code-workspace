@@ -55,6 +55,12 @@
         {
             "name": "proy_3",
             "path": "projects/proy_3"
+        },
+        {
+            "path": "projects/pruebas"
+        },
+        {
+            "path": "projects/Parcial"
         }
     ],
     "settings": {
