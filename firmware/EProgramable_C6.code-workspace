@@ -118,7 +118,8 @@
             "cstdlib": "c",
             "cwchar": "c",
             "ble_mcu.h": "c",
-            "iir_filter.h": "c"
+            "iir_filter.h": "c",
+            "compare": "c"
         },
     },
     "tasks": {
