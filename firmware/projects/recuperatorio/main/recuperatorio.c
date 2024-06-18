@@ -2,7 +2,7 @@
  *
  * \section genDesc General Description
  *
- * Este codigo es un detector de proximidad dando respuestas diferentes ante una magnitud definda por rangos de distancias
+ *  Este codigo es una aplicacion para sensar la temperatura basado en un sensor de distancia y de temperatura con un sistema de informado de la misma mediante UART y buzzer
  *
  * @section changelog Changelog
  *
@@ -178,7 +178,7 @@ void sensado_temperatura(void *param)
                // Enciendo el buzzer si el promedio es alto; 
                 if(promedio_temperatura>37.5){
                     BuzzerOn();
-                    BuzzerPlayTone(50, 1000)}
+                    BuzzerPlayTone(50, 1000);}
                 else {BuzzerOff();}
             }
         }
