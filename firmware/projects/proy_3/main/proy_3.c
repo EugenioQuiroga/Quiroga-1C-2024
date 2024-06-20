@@ -45,10 +45,10 @@
 #define LED_BT LED_1
 #define SAMPLE_FREQ 100
 #define T_SENIAL 10000
-#define CHUNK 4
+#define CHUNK 8
 #define TAMANO 256
 /*==================[internal data definition]===============================*/
-float ecg[4];
+float ecg[8];
 static float ecg_filt[CHUNK];
 
 static float ecg_filtrado[TAMANO];
@@ -66,9 +66,30 @@ float F_cardiaca = 1;
 float Delta_t = 1;
 uint16_t valorAnalogico;
 float valor;
-int indice=0;
-// printf("valor2222 :\n");
+int indice = 0;
+int RR = 0;
+
 /*==================[internal functions declaration]=========================*/
+/*void maximos_2()
+{
+
+    char msg1[128];
+
+    strcpy(msg1, ""); // probar comentar
+    for (int i = 0; i < CHUNK; i++)
+    {
+        if (ecg_filt[i] > 20  && RR >40)
+        {
+            Ntiempo = aux + 40;
+            aux = 0;
+            RR = 0;
+            sprintf(msg1, "*X%.2f*", Ntiempo);
+            BleSendString(msg1);
+        }
+        aux++;
+    }
+}
+*/
 
 /*void maximos()
 {
@@ -76,7 +97,7 @@ int indice=0;
     char msg1[128];
     p = 0;
     strcpy(msg1, "");
-    while (p < 255)
+    while (p < 256)
     {
 
         if (p == 255)
@@ -84,7 +105,7 @@ int indice=0;
             ultimo_valor = ecg_filtrado[p];
         }
 
-        if (ecg_filtrado[p] > 50)
+        if (ecg_filtrado[p] > 250)
         {
             if (((p == 0) && ((ecg_filtrado[p] - ultimo_valor) > 0) && ((ecg_filtrado[p] - ecg_filtrado[p + 1]) > 0)) || ((p != 0) && ((ecg_filtrado[p] - ecg_filtrado[p - 1]) > 0) && ((ecg_filtrado[p] - ecg_filtrado[p + 1]) > 0)))
             {
@@ -105,8 +126,8 @@ int indice=0;
     // F_cardiaca = (1 / (Ntiempo * Delta_t));
 
     BleSendString(msg1);
-}
-*/
+}*/
+
 void read_data(uint8_t *data, uint8_t length)
 {
     switch (data[0])
@@ -136,30 +157,20 @@ static void FftTask(void *pvParameter)
 {
     char msg[128];
     char msg_chunk[24];
-    
+
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-        
-        
         AnalogInputReadSingle(CH1, &valorAnalogico);
         ecg[indice] = valorAnalogico;
         indice++;
-            
-        
 
-        if (indice == 4)
+        if (indice == 8)
         {
-            if (filter)
-            {
-                HiPassFilter(&ecg[0], ecg_filt, CHUNK);
-                LowPassFilter(ecg_filt, ecg_filt, CHUNK);
-            }
-            else
-            {
-                memcpy(ecg_filt, &ecg[0], CHUNK * sizeof(float));
-            }
+
+            HiPassFilter(&ecg[0], ecg_filt, CHUNK);
+            LowPassFilter(ecg_filt, ecg_filt, CHUNK);
 
             /*   if(filter_cero == true){
                        for(int c=0; c<4; c++){
@@ -176,25 +187,27 @@ static void FftTask(void *pvParameter)
             strcpy(msg, "");
             for (uint8_t i = 0; i < CHUNK; i++)
             {
-                // if(filter == true){
-                //      ecg_filtrado[u]=ecg_filt[i];    //guardo el doble de las muestras ya que en 256 tengo solo QRS
-                //      u++;
-                //     if(u==255){
-                //         maximos();//llamar a calcular maximos
-                //         u=0;}
-                //    }
-          
+
+                // ecg_filtrado[u] = ecg_filt[i]; // guardo el doble de las muestras ya que en 256 tengo solo QRS
+                // u++;
+               // RR++;
+                // if (u == 512)
+                // {
+                //    maximos(); // llamar a calcular maximos
+                //   u = 0;
+                //}
+               // if (RR > 40)
+                {
+                 //   maximos_2();
+                }
                 sprintf(msg_chunk, "*G%.2f*", ecg_filt[i]);
                 strcat(msg, msg_chunk);
             }
-           
 
             BleSendString(msg);
 
-            
-            indice=0;
+            indice = 0;
         }
-        
     }
 }
 /*==================[external functions definition]==========================*/
@@ -215,8 +228,8 @@ void app_main(void)
     NeoPixelAllOff();
     TimerInit(&timer_senial);
     LedsInit();
-    LowPassInit(SAMPLE_FREQ, 30, ORDER_2);
-    HiPassInit(SAMPLE_FREQ, 1, ORDER_2);
+    LowPassInit(SAMPLE_FREQ, 20, ORDER_4);
+    HiPassInit(SAMPLE_FREQ, 1, ORDER_4);
     BleInit(&ble_configuration);
 
     xTaskCreate(&FftTask, "FFT", 4096, NULL, 5, &fft_task_handle);
